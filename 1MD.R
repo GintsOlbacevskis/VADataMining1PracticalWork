@@ -3,7 +3,7 @@ library(tidyverse) # For data manipulation and visualization
 library(readr)     # For reading files with various encodings
 
 # Step 1: Load the dataset
-file_path <- "C:\\Users\\test\\Desktop\\1MD\\02_hr_data_v00.csv"
+file_path <- "C:\\Users\\test\\Desktop\\1MD\\02_hr_data_v00.csv" #Must change on Yours
 data <- read_csv2(file_path, locale = locale(encoding = "ISO-8859-1"))
 
 # Step 2: Inspect the data structure
@@ -12,8 +12,11 @@ glimpse(data)
 # Step 3: Identify and fix issues with column names and missing rows
 # Use the fourth row as the header
 colnames(data) <- as.character(unlist(data[4, ]))
-data <- data[-(1:4), ]  # Remove metadata rows
+data <- data[-(1:2), ]  # Remove metadata rows
 colnames(data) <- make.names(colnames(data), unique = TRUE)
+
+# Step 4: Remove Column "A" if it contains no data
+data <- data[, colSums(is.na(data)) != nrow(data)]  # Keep only non-empty columns
 
 # Step 4: Rename columns for better understanding
 colnames(data) <- c("Age", "LeftCompany", "TravelFrequency", "Department", 
@@ -26,20 +29,32 @@ colnames(data) <- c("Age", "LeftCompany", "TravelFrequency", "Department",
                     "YearsSinceLastPromotion", "YearsWithCurrManager")
 
 # Step 5: Convert columns to appropriate data types
-numeric_columns <- c("Age", "DistanceFromHome", "Education", "MonthlyIncome", 
+numeric_columns <- c("Age", "DistanceFromHome", "MonthlyIncome", 
                      "NumCompaniesWorked", "PercentSalaryHike", 
                      "StandardHours", "StockOptionLevel", "TotalWorkingYears", 
                      "TrainingTimesLastYear", "YearsAtCompany", 
                      "YearsSinceLastPromotion", "YearsWithCurrManager")
 
+# Convert columns to numeric, ensuring non-numeric values become NA
 data[numeric_columns] <- lapply(data[numeric_columns], function(x) {
-  as.numeric(as.character(x))
+  x <- as.character(x)
+  as.numeric(ifelse(grepl("^-?\\d+(\\.\\d+)?$", x), x, NA))  # Strict numeric validation
 })
 
-# Step 6: Handle missing values (example: replace NA with median for numeric columns)
-data[numeric_columns] <- lapply(data[numeric_columns], function(x) {
-  ifelse(is.na(x), median(x, na.rm = TRUE), x)
-})
+# Ensure 'LeftCompany' column contains only 'YES' or 'NO'. Replace other values with NA
+data$LeftCompany <- ifelse(data$LeftCompany %in% c("Yes", "No", "NO"), data$LeftCompany, NA)
+
+# Ensure 'Gender' column contains only 'Male' or 'Female'. Replace other values with NA
+data$Gender <- ifelse(data$Gender %in% c("Male", "Female"), data$Gender, NA)
+
+# Ensure 'Over18' column contains only 'Y' or 'N'. Replace other values with NA
+data$Over18 <- ifelse(data$Over18 %in% c("Y", "N"), data$Over18, NA)
+
+# Ensure 'Education' column contains only 'College' or 'MASTER'. Replace other values with NA
+data$Education <- ifelse(data$Education %in% c("College", "MASTER"), data$Education, NA)
+
+# Ensure 'MaritalStatus' column contains only 'Single', 'Married', or 'Divorced'. Replace other values with NA
+data$MaritalStatus <- ifelse(data$MaritalStatus %in% c("Single", "Married", "Divorced"), data$MaritalStatus, NA)
 
 # Step 7: Document data types
 str(data)
@@ -48,7 +63,7 @@ str(data)
 summary(data)
 
 # Step 9: Save cleaned data
-write_csv(data, "C:\\Users\\test\\Desktop\\1MD\\cleaned_hr_data.csv")
+write_csv(data, "C:\\Users\\test\\Desktop\\1MD\\cleaned_hr_data.csv") #Must change on Yours
 
 # Print final summary
 cat("Final dataset has", nrow(data), "rows and", ncol(data), "columns.\n")
