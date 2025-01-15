@@ -1,10 +1,11 @@
 # VADataMining1PracticalWork
 
-##Human Resources (HR) Data:
+## Human Resources (HR) Data:
 There is provided a Human Resources describing general data file 02_hr_data_v00.csv in our 
 course ViA Moodle page. Use R Studio to pre-process / clean up the given data file.
 
-###TASK:
+### TASK:
+
 1.Load all the data in R Studio (i.e. not loosing anything).
 Comment: be careful - look at encoding and delimiters.
 
